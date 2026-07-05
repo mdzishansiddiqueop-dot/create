@@ -5,41 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Opening App...</title>
     <script>
-        // 1. Get the incoming path (e.g., yourname.github.io/shop/https://amzn.to/3xyz)
-        const fullPath = window.location.pathname + window.location.search;
-        
-        // Extract the target link by cutting off your repository name
         const repoName = window.location.pathname.split('/')[1]; 
         const rawTargetUrl = window.location.href.split(repoName + '/')[1];
 
         if (rawTargetUrl) {
-            // Clean up the URL format
             let targetUrl = decodeURIComponent(rawTargetUrl);
             if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
                 targetUrl = 'https://' + targetUrl;
             }
 
-            // 2. The Native App Deep-Link conversion string
-            // This maps standard domains & amzn.to shortlinks directly into the Amazon app protocol
-            let appUrl = targetUrl.replace('https://', 'com.amazon.mobile.shopping.web://');
-            appUrl = appUrl.replace('http://', 'com.amazon.mobile.shopping.web://');
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isAndroid = /android/i.test(userAgent);
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent);
 
-            // 3. Fire the app launch instantly
-            window.location.href = appUrl;
+            // 1. ADVANCED BYPASS FOR ANDROID IN INDIA
+            if (isAndroid) {
+                if (targetUrl.includes('amazon') || targetUrl.includes('amzn.to')) {
+                    // Extract the clean URL without protocol
+                    let cleanUrl = targetUrl.replace('https://', '').replace('http://', '');
+                    
+                    // CRITICAL FIX: Directing specifically to the Indian Amazon App Package
+                    window.location.href = `intent://${cleanUrl}#Intent;scheme=https;package=in.amazon.mShop.android.shopping;end;`;
+                } else {
+                    // General Link: Open cleanly in native Google Chrome to avoid Meta sandbox
+                    let cleanUrl = targetUrl.replace('https://', '').replace('http://', '');
+                    window.location.href = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+                }
+            } 
+            
+            // 2. BYPASS FOR iOS (iPhone)
+            else if (isIOS) {
+                if (targetUrl.includes('amazon') || targetUrl.includes('amzn.to')) {
+                    // Force jump into iOS app structure
+                    window.location.href = targetUrl.replace('https://', 'com.amazon.mobile.shopping.web://').replace('http://', 'com.amazon.mobile.shopping.web://');
+                } else {
+                    // Open in iOS Google Chrome
+                    window.location.href = targetUrl.replace('https://', 'googlechrome://').replace('http://', 'googlechrome://');
+                }
+            } 
+            
+            // 3. DESKTOP / OTHER FALLBACK
+            else {
+                window.location.href = targetUrl;
+            }
 
-            // 4. Fallback: If they don't have the Amazon app installed, open the link in the browser seamlessly
+            // Universal Safety Timer: If the user doesn't have the app installed, send to browser after 600ms
             setTimeout(() => {
                 window.location.href = targetUrl;
-            }, 400);
+            }, 600);
+
         } else {
-            // If someone lands on the root domain without a link appended, send to default Amazon India homepage
             window.location.href = "https://www.amazon.in";
         }
     </script>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f7f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+<body style="margin: 0; background-color: #f7f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;">
     <div style="text-align: center; color: #333;">
-        <p style="font-size: 18px; font-weight: 500; margin-bottom: 8px;">Opening in Amazon App...</p>
+        <p style="font-size: 18px; font-weight: 500; margin-bottom: 8px;">Directing to Amazon App...</p>
         <p style="font-size: 14px; color: #666; margin: 0;">Please wait a moment.</p>
     </div>
 </body>
