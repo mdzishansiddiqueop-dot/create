@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opening App...</title>
+    <script>
+        // 1. Get the incoming path (e.g., yourname.github.io/shop/https://amzn.to/3xyz)
+        const fullPath = window.location.pathname + window.location.search;
+        
+        // Extract the target link by cutting off your repository name
+        const repoName = window.location.pathname.split('/')[1]; 
+        const rawTargetUrl = window.location.href.split(repoName + '/')[1];
+
+        if (rawTargetUrl) {
+            // Clean up the URL format
+            let targetUrl = decodeURIComponent(rawTargetUrl);
+            if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+                targetUrl = 'https://' + targetUrl;
+            }
+
+            // 2. The Native App Deep-Link conversion string
+            // This maps standard domains & amzn.to shortlinks directly into the Amazon app protocol
+            let appUrl = targetUrl.replace('https://', 'com.amazon.mobile.shopping.web://');
+            appUrl = appUrl.replace('http://', 'com.amazon.mobile.shopping.web://');
+
+            // 3. Fire the app launch instantly
+            window.location.href = appUrl;
+
+            // 4. Fallback: If they don't have the Amazon app installed, open the link in the browser seamlessly
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 400);
+        } else {
+            // If someone lands on the root domain without a link appended, send to default Amazon India homepage
+            window.location.href = "https://www.amazon.in";
+        }
+    </script>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f7f9fa; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <div style="text-align: center; color: #333;">
+        <p style="font-size: 18px; font-weight: 500; margin-bottom: 8px;">Opening in Amazon App...</p>
+        <p style="font-size: 14px; color: #666; margin: 0;">Please wait a moment.</p>
+    </div>
+</body>
+</html>
